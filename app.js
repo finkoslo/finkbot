@@ -2,7 +2,24 @@
 const app = require('express')();
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+const Slackbot = require('slackbots');
+
 const getFact = require('./facts');
+const slackbot = new Slackbot({
+  token: process.env.SLACK_BOT_TOKEN,
+  name: 'Fink Bot',
+});
+
+slackbot.on('message', (msg) => {
+  if (msg.type !== 'message') return;
+  if (msg.text.match(/(fact|fakta)/)) {
+    slackbot.postMessage(msg.channel, '', {
+      as_user: true,
+      text: 'Did you know?',
+      attachments: [{ text: getFact(), color: 'db2316' }],
+    });
+  }
+});
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
