@@ -10,26 +10,33 @@ const slackbot = new Slackbot({
   name: 'Fink Bot',
 });
 
+function postFact(channel) {
+  slackbot.postMessage(channel, '', {
+    as_user: true,
+    text: 'Did you know?',
+    attachments: [{ text: getFact(), color: 'db2316' }],
+  });
+}
+
 slackbot.on('message', (msg) => {
   if (msg.type !== 'message') return;
   if (msg.text.match(/(fact|fakta)/)) {
-    slackbot.postMessage(msg.channel, '', {
-      as_user: true,
-      text: 'Did you know?',
-      attachments: [{ text: getFact(), color: 'db2316' }],
-    });
+    postFact(msg.channel);
   }
 });
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
 
-app.get('/', (req, res, next) => res.json({ fact: getFact() }));
-
-app.post('/slack', (req, res, next) => res.json({
-  response_type: "in_channel",
-  attachments: [ { text: getFact() } ],
-}));
+app.post('/slack', (req, res, next) => {
+  switch (req.body.text) {
+    case 'fact':
+      postFact(req.body.channel_id);
+      return res.sendStatus(204);
+    default:
+      return res.send('Try `/fink fact`');
+  }
+});
 
 const server = app.listen(process.env.PORT || 8888, function () {
   const host = server.address().address;
