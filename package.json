@@ -9,6 +9,7 @@
   "author": "Svein Halvor Halvorsen <svein@finkoslo.no>",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.16.1",
     "express": "^4.14.1",
     "morgan": "^1.8.1"
   }
