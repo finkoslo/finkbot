@@ -8,7 +8,11 @@ app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
 
 app.get('/', (req, res, next) => res.json({ fact: getFact() }));
-app.post('/slack', (req, res, next) => res.send(getFact()));
+
+app.post('/slack', (req, res, next) => res.json({
+  response_type: "in_channel",
+  attachments: [ { text: getFact() } ],
+}));
 
 const server = app.listen(process.env.PORT || 8888, function () {
   const host = server.address().address;
