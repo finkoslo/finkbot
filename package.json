@@ -1,0 +1,15 @@
+{
+  "name": "finch-fact-bot",
+  "version": "0.0.1",
+  "description": "Finch Fact Bot",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Svein Halvor Halvorsen <svein@finkoslo.no>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.1",
+    "morgan": "^1.8.1"
+  }
+}
