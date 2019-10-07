@@ -10,30 +10,43 @@ const slackbot = new Slackbot({
   name: 'Fink Bot',
 });
 
-function postFact(channel) {
-  slackbot.postMessage(channel, '', {
-    as_user: true,
+function factObject(extra) {
+  return Object.assign({
     text: 'Did you know?',
     attachments: [{ text: getFact(), color: 'db2316' }],
-  });
+  }, extra);
+}
+
+function postFact(channel) {
+  slackbot
+    .postMessage(channel, '', factObject({ as_user: true }))
+    .catch((error) => { console.warn(error); });
 }
 
 slackbot.on('message', (msg) => {
   if (msg.type !== 'message') return;
   if (msg.text.match(/(fact|fakta)/)) {
     postFact(msg.channel);
+  } else {
+    console.warn('Unrecognized command %o', msg);
   }
+});
+
+slackbot.on('error', (msg) => {
+  console.warn(msg);
 });
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
 
 app.post('/slack', (req, res, next) => {
-  switch (req.body.text) {
+  let cmd = req.body.text;
+  switch (cmd) {
     case 'fact':
-      postFact(req.body.channel_id);
-      return res.sendStatus(204);
+    case 'fakta':
+      return res.json(factObject({ response_type: 'in_channel' }));
     default:
+      console.warn(`Unrecognized command ${cmd}`);
       return res.send('Try `/fink fact`');
   }
 });
