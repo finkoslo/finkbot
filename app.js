@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 
 const contentful = require('./contenful');
 const getFact = require('./facts');
+const profileFallback = '//fink.no/images/profileFallback.jpg';
 
 function factObject(extra) {
   return Object.assign({
@@ -18,7 +19,20 @@ const getEmplyees = role => contentful
   .then(res => res[0].fields.finkEmployee
     .map(empl => empl.fields)
     .filter(empl => empl.position.includes(role))
-    .map(empl => empl.name)
+    .map(empl => ({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*${empl.name}* (${empl.email})\n${empl.keyWords}`
+      },
+      accessory: {
+        type: "image",
+        image_url: `https:${empl.largeProfilePicture 
+          && empl.largeProfilePicture.fields.file.url
+          || profileFallback}`,
+        alt_text: `${empl.name}`
+      }
+    }))
   );
 
 app.use(bodyParser.urlencoded());
@@ -29,13 +43,11 @@ app.post('/slack', async (req, res, next) => {
   switch (cmd) {
     case 'devs':
       return getEmplyees("Utvikler")
-        .then(names => names.join('\n'))
-        .then(names => res.send(names))
+        .then(employees => res.send({ blocks: employees }))
         .catch(error => res.send(`error: ${error}`));
     case 'designers':
       return getEmplyees("Designer")
-        .then(names => names.join('\n'))
-        .then(names => res.send(names))
+        .then(employees => res.send({ blocks: employees }))
         .catch(error => res.send(`error: ${error}`));
     case 'fact':
     case 'fakta':
