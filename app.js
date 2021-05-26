@@ -15,7 +15,10 @@ function factObject(extra) {
 
 const getDevs = () => contentful
   .fetchContent('finksEmployees')
-  .then(res => res[0]);
+  .then(res => res[0].fields.finkEmployee
+    .map(empl => empl.fields)
+    .filter(empl => empl.position.includes("Utvikler"))
+  );
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
