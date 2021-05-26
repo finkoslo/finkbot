@@ -13,14 +13,9 @@ function factObject(extra) {
   }, extra);
 }
 
-// function get
-
-// function makeDevsObject() {
-//   return {
-//     text: 'Alle utviklere',
-//     attachments: [{text: }]
-//   }
-// }
+const getDevs = () => contentful
+  .fetchContent('finksEmployees')
+  .then(res => res[0]);
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
@@ -29,7 +24,7 @@ app.post('/slack', async (req, res, next) => {
   let cmd = req.body.text;
   switch (cmd) {
     case 'devs':
-      return contentful.fetchContent('finksEmployees')
+      return getDevs()
         .then(result => res.send(result))
         .catch(error => res.send(`error: ${error}`));
     case 'fact':
