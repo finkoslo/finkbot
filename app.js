@@ -2,13 +2,8 @@
 const app = require('express')();
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-const Slackbot = require('slackbots');
 
 const getFact = require('./facts');
-const slackbot = new Slackbot({
-  token: process.env.SLACK_BOT_TOKEN,
-  name: 'Fink Bot',
-});
 
 function factObject(extra) {
   return Object.assign({
@@ -16,25 +11,6 @@ function factObject(extra) {
     attachments: [{ text: getFact(), color: 'db2316' }],
   }, extra);
 }
-
-function postFact(channel) {
-  slackbot
-    .postMessage(channel, '', factObject({ as_user: true }))
-    .catch((error) => { console.warn(error); });
-}
-
-slackbot.on('message', (msg) => {
-  if (msg.type !== 'message') return;
-  if (msg.text.match(/(fact|fakta)/)) {
-    postFact(msg.channel);
-  } else {
-    console.warn('Unrecognized command %o', msg);
-  }
-});
-
-slackbot.on('error', (msg) => {
-  console.warn(msg);
-});
 
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
