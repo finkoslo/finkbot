@@ -42,7 +42,7 @@ app.use(logger('dev'));
 app.post('/slack', async (req, res, next) => {
   let token = req.body.token;
   if (token != process.env.SLACK_TOKEN) {
-    return res.send("Invalid token");
+    return res.status(401).end();
   }
 
   let args = req.body.text.split(" ");
