@@ -37,8 +37,12 @@ const getEmplyeesBlocks = role => getEmplyees(role)
   })));
 
 const verifySignature = (req, res, next) => {
+  const fail = () => res.status(401).end();
   const signature = req.headers['x-slack-signature'];
   const timestamp = req.headers['x-slack-request-timestamp'];
+  if (!signature || !timestamp) {
+    fail();
+  }
   const hmac = crypto.createHmac('sha256', process.env.SLACK_SIGNING_SECRET);
   const [version, hash] = signature.split('=');
   const sig_base = `${version}:${timestamp}:${req.rawBody}`;
@@ -46,7 +50,7 @@ const verifySignature = (req, res, next) => {
   const myHash = hmac.digest('hex');
   return myHash === hash
     ? next()
-    : res.status(401).end()
+    : fail();
 }; 
 
 const app = express();
