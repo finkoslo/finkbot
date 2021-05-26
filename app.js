@@ -13,11 +13,11 @@ function factObject(extra) {
   }, extra);
 }
 
-const getDevs = () => contentful
+const getEmplyees = role => contentful
   .fetchContent('finksEmployees')
   .then(res => res[0].fields.finkEmployee
     .map(empl => empl.fields)
-    .filter(empl => empl.position.includes("Utvikler"))
+    .filter(empl => empl.position.includes(role))
     .map(empl => empl.name)
   );
 
@@ -28,9 +28,14 @@ app.post('/slack', async (req, res, next) => {
   let cmd = req.body.text;
   switch (cmd) {
     case 'devs':
-      return getDevs()
+      return getEmplyees("Utvikler")
         .then(names => names.map(name => ({ text: name, color: 'db2316' })))
         .then(attachments => res.send({text: "Utviklere", attachments: attachments}))
+        .catch(error => res.send(`error: ${error}`));
+    case 'designers':
+      return getEmplyees("Designer")
+        .then(names => names.map(name => ({ text: name, color: 'db2316' })))
+        .then(attachments => res.send({text: "Designere", attachments: attachments}))
         .catch(error => res.send(`error: ${error}`));
     case 'fact':
     case 'fakta':
