@@ -70,7 +70,7 @@ app.post('/slack', async (req, res, next) => {
           type: "section", 
           text: {
             type: "mrkdwn",
-            text: `*Gruppe ${i}:* ${group.join(", ")}`
+            text: `*Gruppe ${i}:*\n${group.join("\n")}`
           }
         })))
         .then(result => res.send({ blocks: result }))
