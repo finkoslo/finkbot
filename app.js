@@ -41,7 +41,7 @@ const verifySignature = (req, res, next) => {
   const signature = req.headers['x-slack-signature'];
   const timestamp = req.headers['x-slack-request-timestamp'];
   if (!signature || !timestamp) {
-    fail();
+    return fail();
   }
   const hmac = crypto.createHmac('sha256', process.env.SLACK_SIGNING_SECRET);
   const [version, hash] = signature.split('=');
