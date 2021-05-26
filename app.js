@@ -1,8 +1,8 @@
 'use strict';
-const app = require('express')();
+const express = require('express');
 const logger = require('morgan');
-const bodyParser = require('body-parser');
 const _ = require('lodash');
+const crypto = require('crypto');
 
 const contentful = require('./contenful');
 const getFact = require('./facts');
@@ -36,18 +36,27 @@ const getEmplyeesBlocks = role => getEmplyees(role)
     }
   })));
 
-app.use(bodyParser.urlencoded());
+const verifySignature = (req, res, next) => {
+  const signature = req.headers['x-slack-signature'];
+  const timestamp = req.headers['x-slack-request-timestamp'];
+  const hmac = crypto.createHmac('sha256', process.env.SLACK_SIGNING_SECRET);
+  const [version, hash] = signature.split('=');
+  const sig_base = `${version}:${timestamp}:${req.rawBody}`;
+  hmac.update(sig_base);
+  const myHash = hmac.digest('hex');
+  return myHash === hash
+    ? next()
+    : res.status(401).end()
+}; 
+
+const app = express();
+
+app.use(express.urlencoded({ extended: true, verify: (req, res, buf) => { req.rawBody = buf } }));
 app.use(logger('dev'));
+app.use(verifySignature)
 
 app.post('/slack', async (req, res, next) => {
-  let token = req.body.token;
-  if (token != process.env.SLACK_TOKEN) {
-    return res.status(401).end();
-  }
-
-  let args = req.body.text.split(" ");
-  let cmd = args[0];
-  let arg = args[1];
+  const [cmd, arg] = req.body.text.split(" ");
   
   switch (cmd) {
     case 'dev':
