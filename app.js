@@ -3,6 +3,7 @@ const app = require('express')();
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 
+const contentful = require('./contenful');
 const getFact = require('./facts');
 
 function factObject(extra) {
@@ -12,12 +13,25 @@ function factObject(extra) {
   }, extra);
 }
 
+// function get
+
+// function makeDevsObject() {
+//   return {
+//     text: 'Alle utviklere',
+//     attachments: [{text: }]
+//   }
+// }
+
 app.use(bodyParser.urlencoded());
 app.use(logger('dev'));
 
-app.post('/slack', (req, res, next) => {
+app.post('/slack', async (req, res, next) => {
   let cmd = req.body.text;
   switch (cmd) {
+    case 'devs':
+      return contentful.fetchContent('finksEmployees')
+        .then(result => res.send(result))
+        .catch(error => res.send(`error: ${error}`));
     case 'fact':
     case 'fakta':
       return res.json(factObject({ response_type: 'in_channel' }));
