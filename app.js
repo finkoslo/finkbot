@@ -18,6 +18,7 @@ const getDevs = () => contentful
   .then(res => res[0].fields.finkEmployee
     .map(empl => empl.fields)
     .filter(empl => empl.position.includes("Utvikler"))
+    .map(empl => empl.name)
   );
 
 app.use(bodyParser.urlencoded());
@@ -28,7 +29,8 @@ app.post('/slack', async (req, res, next) => {
   switch (cmd) {
     case 'devs':
       return getDevs()
-        .then(result => res.send(result))
+        .then(names => names.map(name => ({ text: name, color: 'db2316' })))
+        .then(attachments => res.send({text: "Utviklere", attachments: attachments}))
         .catch(error => res.send(`error: ${error}`));
     case 'fact':
     case 'fakta':
